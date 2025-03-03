@@ -1,12 +1,21 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
+const errorHandler = require('./middleware/error');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// 加载环境变量
+dotenv.config();
 
-var app = express();
+// 连接数据库
+connectDB();
+
+// 路由文件
+const authRouter = require('./routes/auth');
+
+const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -14,7 +23,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// 挂载路由
+app.use('/api/auth', authRouter);
+
+// 错误处理中间件
+app.use(errorHandler);
 
 module.exports = app;

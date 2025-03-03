@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('callcall-server:server');
 var http = require('http');
+const socketio = require('socket.io');
 
 /**
  * Get port from environment and store in Express.
@@ -20,6 +21,38 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+
+/**
+ * Create Socket.io instance
+ */
+const io = socketio(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+// Socket.io 连接处理
+io.on('connection', (socket) => {
+  console.log('New WebSocket connection');
+  
+  // 用户加入
+  socket.on('join', ({ userId, username }) => {
+    console.log(`${username} (${userId}) 已连接`);
+    
+    // 广播用户上线消息
+    socket.broadcast.emit('userOnline', {
+      userId,
+      username,
+      time: new Date()
+    });
+  });
+  
+  // 用户断开连接
+  socket.on('disconnect', () => {
+    console.log('用户断开连接');
+  });
+});
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -87,4 +120,5 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
+  console.log(`服务器运行在 http://localhost:${port}`);
 }
