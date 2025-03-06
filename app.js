@@ -14,17 +14,19 @@ connectDB();
 
 // 路由文件
 const authRouter = require('./routes/auth');
+const messageRouter = require('./routes/message');
 
 const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 挂载路由
 app.use('/api/auth', authRouter);
+app.use('/api/message', messageRouter)
 
 // 错误处理中间件
 app.use(errorHandler);
