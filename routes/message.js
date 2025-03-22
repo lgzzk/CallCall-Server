@@ -5,6 +5,6 @@ const {sendMessage} = require('../controllers/message');
 
 router.use(protect);
 
-router.use('/', sendMessage);
+router.post('/sendMessage', sendMessage);
 
 module.exports = router;

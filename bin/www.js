@@ -4,10 +4,11 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('callcall-server:server');
-var http = require('http');
+const app = require('../app');
+const debug = require('debug')('callcall-server:server');
+const http = require('http');
 const socketio = require('socket.io');
+const {onlineUsers} = require('../utils/socket');
 
 /**
  * Get port from environment and store in Express.
@@ -32,25 +33,22 @@ const io = socketio(server, {
   }
 });
 
+app.set('io', io)
+
 // Socket.io 连接处理
 io.on('connection', (socket) => {
-  console.log('New WebSocket connection');
-  
-  // 用户加入
-  socket.on('join', ({ userId, username }) => {
-    console.log(`${username} (${userId}) 已连接`);
-    
-    // 广播用户上线消息
-    socket.broadcast.emit('userOnline', {
-      userId,
-      username,
-      time: new Date()
-    });
+  console.log('新客户端连接:', socket.id);
+  // 用户登录时，保存用户ID和socket ID的映射
+  socket.on('login', (userId) => {
+    onlineUsers.set(userId, socket.id)
+    console.log(`用户 ${userId} 的socket已连接，ID: ${socket.id}`);
   });
-  
+
+
   // 用户断开连接
   socket.on('disconnect', () => {
-    console.log('用户断开连接');
+    console.log(socket.id,'用户断开连接');
+    onlineUsers.delete(socket.id)
   });
 });
 
